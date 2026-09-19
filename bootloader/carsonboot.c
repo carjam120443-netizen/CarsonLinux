@@ -1,6 +1,8 @@
 #include <efi.h>
 #include <efilib.h>
 
+static EFI_HANDLE carsonboot_image;
+
 static void print_banner(void) {
     ST->ConOut->SetAttribute(ST->ConOut, EFI_LIGHTBLUE | EFI_BACKGROUND_BLACK);
     Print(L"\r\n");
@@ -20,14 +22,14 @@ static EFI_STATUS launch_grub(void) {
     EFI_STATUS status;
     CHAR16 path[] = L"\\EFI\\BOOT\\GRUBX64.EFI";
 
-    status = uefi_call_wrapper(BS->HandleProtocol, 3, gImageHandle,
+    status = uefi_call_wrapper(BS->HandleProtocol, 3, carsonboot_image,
                                &LoadedImageProtocol, (void **)&loaded);
     if (EFI_ERROR(status)) return status;
 
     device_path = FileDevicePath(loaded->DeviceHandle, path);
     if (device_path == NULL) return EFI_OUT_OF_RESOURCES;
 
-    status = uefi_call_wrapper(BS->LoadImage, 6, FALSE, gImageHandle,
+    status = uefi_call_wrapper(BS->LoadImage, 6, FALSE, carsonboot_image,
                                device_path, NULL, 0, &image);
 
     FreePool(device_path);
@@ -41,7 +43,7 @@ static EFI_STATUS launch_grub(void) {
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *system_table) {
     EFI_STATUS status;
-    gImageHandle = image;
+    carsonboot_image = image;
     ST = system_table;
     BS = ST->BootServices;
 
