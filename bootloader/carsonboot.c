@@ -13,10 +13,14 @@ static void print_banner(void) {
     ST->ConOut->SetAttribute(ST->ConOut, EFI_LIGHTGRAY | EFI_BACKGROUND_BLACK);
 }
 
-static EFI_STATUS open_root(EFI_FILE_PROTOCOL **root) {
+static EFI_STATUS launch_grub(void) {
     EFI_LOADED_IMAGE *loaded;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *fs;
+    EFI_FILE_PROTOCOL *root;
+    EFI_HANDLE image;
+    EFI_DEVICE_PATH *device_path;
     EFI_STATUS status;
+    CHAR16 path[] = L"\\EFI\\BOOT\\GRUBX64.EFI";
 
     status = uefi_call_wrapper(BS->HandleProtocol, 3, gImageHandle,
                                &LoadedImageProtocol, (void **)&loaded);
@@ -26,45 +30,21 @@ static EFI_STATUS open_root(EFI_FILE_PROTOCOL **root) {
                                &FileSystemProtocol, (void **)&fs);
     if (EFI_ERROR(status)) return status;
 
-    return uefi_call_wrapper(fs->OpenVolume, 2, fs, root);
-}
-
-static EFI_STATUS launch_grub(void) {
-    EFI_FILE_PROTOCOL *root;
-    EFI_FILE_PROTOCOL *file;
-    EFI_HANDLE image;
-    EFI_STATUS status;
-    CHAR16 path[] = L"\\EFI\\BOOT\\GRUBX64.EFI";
-
-    status = open_root(&root);
+    status = uefi_call_wrapper(fs->OpenVolume, 2, fs, &root);
     if (EFI_ERROR(status)) return status;
 
-    status = uefi_call_wrapper(root->Open, 5, root, &file, path,
-                               EFI_FILE_MODE_READ, 0);
-    if (EFI_ERROR(status)) {
-        Print(L"\r\n[CarsonBoot] GRUB fallback not found.\r\n");
-        uefi_call_wrapper(root->Close, 1, root);
-        return status;
-    }
-
-    uefi_call_wrapper(file->Close, 1, file);
+    status = uefi_call_wrapper(BS->LocateProtocol, 3, &DevicePathProtocol,
+                               NULL, (void **)&device_path);
+    (void)device_path;
 
     status = uefi_call_wrapper(BS->LoadImage, 6, FALSE, gImageHandle,
-                               NULL, NULL, 0, &image);
-    if (EFI_ERROR(status)) {
-        uefi_call_wrapper(root->Close, 1, root);
-        return status;
-    }
-
-    // Re-open the image with the filesystem path so firmware resolves it.
-    status = uefi_call_wrapper(BS->LoadImage, 6, FALSE, gImageHandle,
-                               NULL, NULL, 0, &image);
-    if (EFI_ERROR(status)) {
-        uefi_call_wrapper(root->Close, 1, root);
-        return status;
-    }
-
+                               loaded->FilePath, NULL, 0, &image);
     uefi_call_wrapper(root->Close, 1, root);
+    if (EFI_ERROR(status)) {
+        Print(L"\r\n[CarsonBoot] Could not load %s: %r\r\n", path, status);
+        return status;
+    }
+
     return uefi_call_wrapper(BS->StartImage, 3, image, NULL, NULL);
 }
 
