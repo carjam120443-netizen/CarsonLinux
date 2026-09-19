@@ -1,25 +1,32 @@
-name: Build CarsonLinux
+name: Build CarsonLinux ISO
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
-  base-check:
-    runs-on: ubuntu-latest
+  build-iso:
+    runs-on: ubuntu-24.04
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate base layout
+      - name: Install build dependencies
         run: |
-          test -f README.md
-          test -f LICENSE
-          test -f assets/carsonlinux.svg
-          test -f rootfs/init
-          test -f rootfs/etc/os-release
-          test -f kernel/config
-          bash -n build/config.sh
-          bash -n scripts/build-rootfs.sh
-          echo "CarsonLinux base layout OK"
+          sudo apt-get update
+          sudo apt-get install -y             bc             bison             build-essential             cpio             flex             grub-pc-bin             grub-efi-amd64-bin             grub2-common             libelf-dev             libssl-dev             mtools             xorriso             xz-utils
+
+      - name: Build CarsonLinux ISO
+        run: |
+          chmod +x scripts/build-iso.sh
+          ./scripts/build-iso.sh
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: CarsonLinux-x86_64-ISO
+          path: out/*.iso
+          if-no-files-found: error
