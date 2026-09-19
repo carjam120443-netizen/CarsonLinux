@@ -1,0 +1,121 @@
+#!/bin/sh
+# CarsonLinux package manager (cpkg)
+# Package format: .cpkg = gzip-compressed tar archive containing:
+#   manifest  (NAME, VERSION, ARCH, DESCRIPTION)
+#   payload/  (files installed relative to /)
+
+set -eu
+
+DB=/var/lib/cpkg
+ROOT=/
+mkdir -p "$DB/installed"
+
+usage() {
+    echo "CarsonLinux package manager"
+    echo
+    echo "Usage:"
+    echo "  cpkg install <file.cpkg>"
+    echo "  cpkg remove <name>"
+    echo "  cpkg list"
+    echo "  cpkg info <name>"
+    echo "  cpkg help"
+}
+
+die() {
+    echo "cpkg: $*" >&2
+    exit 1
+}
+
+pkg_name() {
+    sed -n 's/^NAME=//p' "$1" | head -n 1
+}
+
+pkg_version() {
+    sed -n 's/^VERSION=//p' "$1" | head -n 1
+}
+
+case "${1:-help}" in
+    install)
+        [ "${2:-}" ] || die "package file required"
+        pkg="$2"
+        [ -f "$pkg" ] || die "package not found: $pkg"
+
+        tmp="$(mktemp -d /tmp/cpkg.XXXXXX)"
+        trap 'rm -rf "$tmp"' EXIT
+
+        tar -xzf "$pkg" -C "$tmp" || die "invalid .cpkg archive"
+        [ -f "$tmp/manifest" ] || die "package has no manifest"
+        [ -d "$tmp/payload" ] || die "package has no payload"
+
+        name="$(pkg_name "$tmp/manifest")"
+        version="$(pkg_version "$tmp/manifest")"
+        [ -n "$name" ] || die "manifest has no NAME"
+        [ -n "$version" ] || die "manifest has no VERSION"
+
+        if [ -f "$DB/installed/$name" ]; then
+            echo "cpkg: $name is already installed"
+            exit 1
+        fi
+
+        # Record every payload path before installation so removal is precise.
+        find "$tmp/payload" -type f -o -type l |
+            sed 's#^'$tmp'/payload/##' > "$tmp/files"
+
+        (cd "$tmp/payload" && tar -cf - .) | (cd "$ROOT" && tar -xf -)
+
+        {
+            echo "NAME=$name"
+            echo "VERSION=$version"
+            echo "ARCH=$(sed -n 's/^ARCH=//p' "$tmp/manifest" | head -n 1)"
+            echo "DESCRIPTION=$(sed -n 's/^DESCRIPTION=//p' "$tmp/manifest" | head -n 1)"
+            cat "$tmp/files"
+        } > "$DB/installed/$name"
+
+        echo "Installed $name-$version"
+        ;;
+
+    remove)
+        name="${2:-}"
+        [ -n "$name" ] || die "package name required"
+        record="$DB/installed/$name"
+        [ -f "$record" ] || die "package is not installed: $name"
+
+        # Only remove files recorded for this package.
+        sed -n '/^[^A-Z][^=]*$/p' "$record" | while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            rm -f "$ROOT/$file"
+        done
+
+        rm -f "$record"
+        echo "Removed $name"
+        ;;
+
+    list)
+        found=0
+        for record in "$DB"/installed/*; do
+            [ -f "$record" ] || continue
+            found=1
+            name="$(pkg_name "$record")"
+            version="$(pkg_version "$record")"
+            echo "$name-$version"
+        done
+        [ "$found" -eq 1 ] || echo "No packages installed."
+        ;;
+
+    info)
+        name="${2:-}"
+        [ -n "$name" ] || die "package name required"
+        record="$DB/installed/$name"
+        [ -f "$record" ] || die "package is not installed: $name"
+        sed -n '1,/^[^A-Z][^=]*$/p' "$record"
+        ;;
+
+    help|--help|-h)
+        usage
+        ;;
+
+    *)
+        usage
+        exit 1
+        ;;
+esac
