@@ -17,7 +17,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y             bc             bison             build-essential             cpio             flex             grub-pc-bin             grub-efi-amd64-bin             grub2-common             libelf-dev             libssl-dev             mtools             xorriso             xz-utils
+          sudo apt-get install -y             bc             bison             busybox-static             build-essential             cpio             flex             grub-pc-bin             grub-efi-amd64-bin             grub2-common             libelf-dev             libssl-dev             mtools             xorriso             xz-utils
 
       - name: Build CarsonLinux ISO
         run: |
