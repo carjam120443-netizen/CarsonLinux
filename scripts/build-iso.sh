@@ -152,8 +152,8 @@ objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym \
 mkdir -p "$WORK/efi/EFI/BOOT"
 grub-mkstandalone --format=x86_64-efi \
   --output="$WORK/efi/EFI/BOOT/GRUBX64.EFI" \
-  --install-modules="all_video gfxterm font normal linux search search_fs_file configfile echo" \
-  --modules="all_video gfxterm font normal linux search search_fs_file configfile echo" \
+  --install-modules="all_video gfxterm font normal linux iso9660 search search_fs_file configfile echo" \
+  --modules="all_video gfxterm font normal linux iso9660 search search_fs_file configfile echo" \
   --locales="" --fonts="" \
   "boot/grub/grub.cfg=$WORK/iso/boot/grub/grub.cfg"
 
