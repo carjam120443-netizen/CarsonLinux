@@ -24,9 +24,14 @@ EOF
 cp -a "$ROOT/rootfs/." "$ROOTFS/"
 chmod +x "$ROOTFS/init" "$ROOTFS/usr/bin/cpkg" "$ROOTFS/usr/bin/carsonfetch"
 
-chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive PATH=/usr/sbin:/usr/bin:/sbin:/bin   apt-get update
+chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive PATH=/usr/sbin:/usr/bin:/sbin:/bin \
+  apt-get update
 
-chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive PATH=/usr/sbin:/usr/bin:/sbin:/bin   apt-get install -y --no-install-recommends     xfce4 xfce4-goodies xfce4-terminal xorg lightdm dbus-x11     network-manager network-manager-gnome xserver-xorg-input-all     xserver-xorg-video-fbdev
+chroot "$ROOTFS" /usr/bin/env DEBIAN_FRONTEND=noninteractive PATH=/usr/sbin:/usr/bin:/sbin:/bin \
+  apt-get install -y --no-install-recommends \
+    xfce4 xfce4-goodies xfce4-terminal xorg lightdm dbus-x11 \
+    network-manager network-manager-gnome xserver-xorg-input-all \
+    xserver-xorg-video-fbdev
 
 chroot "$ROOTFS" apt-get clean
 rm -rf "$ROOTFS/var/lib/apt/lists/"*
@@ -74,9 +79,12 @@ mkdir -p "$ROOTFS"/{dev,proc,sys,tmp,run,home,var}
 )
 gzip -9 -f "$WORK/initramfs.cpio"
 
-KVER="6.12.47"
-curl -L --fail --retry 3 -o "$WORK/linux.tar.xz"   "https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-$KVER.tar.xz"
-tar -xf "$WORK/linux.tar.xz" -C "$WORK"
+# CarsonLinux tracks the exact Linux release candidate used by the ISO.
+# v7.3-rc3 is intentionally an unstable development kernel.
+KVER="7.3-rc3"
+KERNEL_TAG="v$KVER"
+KERNEL_URL="https://git.kernel.org/torvalds/h/$KERNEL_TAG"
+git clone --depth 1 --branch "$KERNEL_TAG" "$KERNEL_URL" "$WORK/linux-$KVER"
 
 cd "$WORK/linux-$KVER"
 cp "$ROOT/kernel/config" .config
@@ -96,7 +104,6 @@ set menu_color_highlight=white/blue
 insmod all_video
 insmod gfxterm
 insmod font
-
 if loadfont unicode; then
     terminal_output gfxterm
 fi
@@ -129,14 +136,26 @@ EFI_LIB="$(dpkg -L gnu-efi | awk '/\/libgnuefi\.a$/{print; exit}')"
 test -n "$EFI_INC" -a -n "$EFI_CRT" -a -n "$EFI_LDS" -a -n "$EFI_LIB"
 
 mkdir -p "$WORK/carsonboot"
-gcc -I"$EFI_INC" -I"$EFI_INC/x86_64"   -fpic -ffreestanding -fno-stack-protector -fno-stack-check   -fshort-wchar -mno-red-zone -DEFI_FUNCTION_WRAPPER   -c "$ROOT/bootloader/carsonboot.c" -o "$WORK/carsonboot/carsonboot.o"
+gcc -I"$EFI_INC" -I"$EFI_INC/x86_64" \
+  -fpic -ffreestanding -fno-stack-protector -fno-stack-check \
+  -fshort-wchar -mno-red-zone -DEFI_FUNCTION_WRAPPER \
+  -c "$ROOT/bootloader/carsonboot.c" -o "$WORK/carsonboot/carsonboot.o"
 
-ld -nostdlib -znocombreloc -T "$EFI_LDS" -shared -Bsymbolic   -L"$(dirname "$EFI_LIB")" "$EFI_CRT" "$WORK/carsonboot/carsonboot.o"   -o "$WORK/carsonboot/carsonboot.so" -lefi -lgnuefi
+ld -nostdlib -znocombreloc -T "$EFI_LDS" -shared -Bsymbolic \
+  -L"$(dirname "$EFI_LIB")" "$EFI_CRT" "$WORK/carsonboot/carsonboot.o" \
+  -o "$WORK/carsonboot/carsonboot.so" -lefi -lgnuefi
 
-objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym   -j .rel -j .rela -j .reloc --target=efi-app-x86_64   "$WORK/carsonboot/carsonboot.so" "$WORK/carsonboot/CarsonBoot.efi"
+objcopy -j .text -j .sdata -j .data -j .dynamic -j .dynsym \
+  -j .rel -j .rela -j .reloc --target=efi-app-x86_64 \
+  "$WORK/carsonboot/carsonboot.so" "$WORK/carsonboot/CarsonBoot.efi"
 
 mkdir -p "$WORK/efi/EFI/BOOT"
-grub-mkstandalone --format=x86_64-efi   --output="$WORK/efi/EFI/BOOT/GRUBX64.EFI"   --install-modules="all_video gfxterm font normal linux search search_fs_file configfile echo"   --modules="all_video gfxterm font normal linux search search_fs_file configfile echo"   --locales="" --fonts=""   "boot/grub/grub.cfg=$WORK/iso/boot/grub/grub.cfg"
+grub-mkstandalone --format=x86_64-efi \
+  --output="$WORK/efi/EFI/BOOT/GRUBX64.EFI" \
+  --install-modules="all_video gfxterm font normal linux search search_fs_file configfile echo" \
+  --modules="all_video gfxterm font normal linux search search_fs_file configfile echo" \
+  --locales="" --fonts="" \
+  "boot/grub/grub.cfg=$WORK/iso/boot/grub/grub.cfg"
 
 cp "$WORK/carsonboot/CarsonBoot.efi" "$WORK/efi/EFI/BOOT/BOOTX64.EFI"
 
@@ -144,7 +163,12 @@ dd if=/dev/zero of="$WORK/efiboot.img" bs=1M count=16 status=none
 mkfs.vfat -n CARSONEFI "$WORK/efiboot.img" >/dev/null
 mcopy -s -i "$WORK/efiboot.img" "$WORK/efi/EFI" ::/
 
-grub-mkstandalone --format=i386-pc   --output="$WORK/core.img"   --install-modules="linux normal iso9660 biosdisk search search_fs_file configfile echo"   --modules="linux normal iso9660 biosdisk search search_fs_file configfile echo"   --locales="" --fonts=""   "boot/grub/grub.cfg=$WORK/iso/boot/grub/grub.cfg"
+grub-mkstandalone --format=i386-pc \
+  --output="$WORK/core.img" \
+  --install-modules="linux normal iso9660 biosdisk search search_fs_file configfile echo" \
+  --modules="linux normal iso9660 biosdisk search search_fs_file configfile echo" \
+  --locales="" --fonts="" \
+  "boot/grub/grub.cfg=$WORK/iso/boot/grub/grub.cfg"
 
 cat /usr/lib/grub/i386-pc/cdboot.img "$WORK/core.img" > "$WORK/bios.img"
 
@@ -152,7 +176,14 @@ cat /usr/lib/grub/i386-pc/cdboot.img "$WORK/core.img" > "$WORK/bios.img"
 # must be present at the path advertised to the El Torito boot catalog.
 cp "$WORK/bios.img" "$WORK/iso/boot/grub/bios.img"
 
-xorriso -as mkisofs   -iso-level 3 -r -J -joliet-long -V "CARSONLINUX"   -o "$OUT/CarsonLinux-$CARSONLINUX_VERSION-x86_64.iso"   -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table   --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img   -eltorito-alt-boot -e --interval:appended_partition_2:all:: -no-emul-boot   -append_partition 2 0xef "$WORK/efiboot.img"   -isohybrid-gpt-basdat "$WORK/iso"
+xorriso -as mkisofs \
+  -iso-level 3 -r -J -joliet-long -V "CARSONLINUX" \
+  -o "$OUT/CarsonLinux-$CARSONLINUX_VERSION-x86_64.iso" \
+  -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table \
+  --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
+  -eltorito-alt-boot -e --interval:appended_partition_2:all:: -no-emul-boot \
+  -append_partition 2 0xef "$WORK/efiboot.img" \
+  -isohybrid-gpt-basdat "$WORK/iso"
 
 echo "ISO created:"
 ls -lh "$OUT/"*.iso
