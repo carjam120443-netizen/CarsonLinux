@@ -148,6 +148,10 @@ grub-mkstandalone --format=i386-pc   --output="$WORK/core.img"   --install-modul
 
 cat /usr/lib/grub/i386-pc/cdboot.img "$WORK/core.img" > "$WORK/bios.img"
 
+# xorriso's -b path is resolved inside the ISO tree, so the BIOS image
+# must be present at the path advertised to the El Torito boot catalog.
+cp "$WORK/bios.img" "$WORK/iso/boot/grub/bios.img"
+
 xorriso -as mkisofs   -iso-level 3 -r -J -joliet-long -V "CARSONLINUX"   -o "$OUT/CarsonLinux-$CARSONLINUX_VERSION-x86_64.iso"   -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table   --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img   -eltorito-alt-boot -e --interval:appended_partition_2:all:: -no-emul-boot   -append_partition 2 0xef "$WORK/efiboot.img"   -isohybrid-gpt-basdat "$WORK/iso"
 
 echo "ISO created:"
