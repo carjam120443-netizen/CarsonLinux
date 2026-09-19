@@ -20,8 +20,15 @@ CarsonLinux is an experimental x86_64 Linux distribution focused on learning how
 - 📦 A CarsonLinux package manager
 - 🌐 Networking support
 - 💾 VirtualBox-first testing
-- 🖥️ Desktop environment support later
+- 🖥️ Desktop environment support
 - 💿 Reproducible ISO builds through GitHub Actions
+- 🚀 CarsonBoot custom UEFI boot stage
+
+## Boot process
+
+CarsonLinux ISO images use **CarsonBoot** as the default UEFI removable-media boot entry.
+
+`EFI/BOOT/BOOTX64.EFI` starts CarsonBoot, which displays the CarsonLinux boot screen and hands off to the bundled GRUB stage at `EFI/BOOT/GRUBX64.EFI`. BIOS boot remains supported through a GRUB-based boot image while CarsonBoot develops toward a fully native kernel loader.
 
 ## Project layout
 
@@ -29,6 +36,8 @@ CarsonLinux is an experimental x86_64 Linux distribution focused on learning how
 CarsonLinux/
 ├── assets/
 │   └── carsonlinux.svg
+├── bootloader/
+│   └── carsonboot.c
 ├── build/
 │   └── config.sh
 ├── kernel/
@@ -39,11 +48,13 @@ CarsonLinux/
 │   │   └── os-release
 │   └── init
 ├── packages/
-│   └── README.md
+│   ├── README.md
+│   └── carsonboot/
+│       └── README.md
 ├── installer/
 │   └── README.md
 ├── scripts/
-│   └── build-rootfs.sh
+│   └── build-iso.sh
 └── .github/
     └── workflows/
         └── build.yml
@@ -64,7 +75,8 @@ Planned layers:
 7. User management
 8. Installer
 9. Desktop environment
-10. ISO/release automation
+10. CarsonBoot
+11. ISO/release automation
 
 ## Development
 
@@ -74,4 +86,4 @@ The first target is **x86_64**.
 
 ## License
 
-CarsonLinux is currently released under the MIT License. See [LICENSE](LICENSE).
+CarsonLinux uses the **CarsonLinux Custom License**. See [LICENSE](LICENSE).
