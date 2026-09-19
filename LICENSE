@@ -1,21 +1,41 @@
-MIT License
-
+CarsonLinux Custom License
 Copyright (c) 2026 CarsonLinux Project
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This license applies to the CarsonLinux source code and related project
+files in this repository unless a file states otherwise.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Permission
+You are permitted to view, study, modify, build, and run CarsonLinux for
+personal, educational, and non-commercial purposes.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. Redistribution
+You may redistribute unmodified or modified copies of CarsonLinux for
+personal or educational purposes, provided that this license and the
+original copyright notice remain with the redistributed work.
+
+3. Modified works
+If you distribute a modified version, you must clearly indicate that the
+version has been modified from the original CarsonLinux project.
+
+4. Commercial use
+Commercial use, sale, or inclusion of CarsonLinux or substantial portions
+of this project in a commercial product is not permitted without explicit
+written permission from the CarsonLinux Project.
+
+5. Trademarks and branding
+The CarsonLinux name, logo, and branding are not granted for use as
+trademarks or as an indication that a modified version is an official
+CarsonLinux release without permission.
+
+6. No warranty
+This software is provided "as is", without warranty of any kind, express or
+implied. The CarsonLinux Project is not responsible for damage or loss
+resulting from use of the software.
+
+7. Scope
+This license does not override the separate licenses of third-party
+components included with or used by CarsonLinux. Those components remain
+subject to their respective licenses.
+
+By using, modifying, or redistributing material covered by this license,
+you agree to its terms.
