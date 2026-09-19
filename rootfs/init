@@ -3,6 +3,7 @@
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev
+mkdir -p /run /tmp
 
 hostname "$(cat /etc/hostname 2>/dev/null || echo carsonlinux)"
 
@@ -11,7 +12,8 @@ echo "================================"
 echo "        Welcome to CarsonLinux"
 echo "================================"
 echo
-echo "The CarsonLinux base system is alive."
+echo "XFCE live desktop starting..."
+echo "Live user: live"
 echo
 
-exec /bin/sh
+exec /sbin/init
