@@ -1,0 +1,17 @@
+#!/bin/sh
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+
+hostname "$(cat /etc/hostname 2>/dev/null || echo carsonlinux)"
+
+echo
+echo "================================"
+echo "        Welcome to CarsonLinux"
+echo "================================"
+echo
+echo "The CarsonLinux base system is alive."
+echo
+
+exec /bin/sh

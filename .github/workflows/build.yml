@@ -1,0 +1,25 @@
+name: Build CarsonLinux
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  base-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate base layout
+        run: |
+          test -f README.md
+          test -f LICENSE
+          test -f assets/carsonlinux.svg
+          test -f rootfs/init
+          test -f rootfs/etc/os-release
+          test -f kernel/config
+          bash -n build/config.sh
+          bash -n scripts/build-rootfs.sh
+          echo "CarsonLinux base layout OK"

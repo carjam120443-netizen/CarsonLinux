@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">CarsonLinux logo</title>
+  <desc id="desc">A blue terminal-style CarsonLinux emblem with a stylized C and L.</desc>
+  <rect width="512" height="512" rx="96" fill="#111827"/>
+  <rect x="52" y="52" width="408" height="408" rx="72" fill="#1d4ed8"/>
+  <path d="M151 176c-26 25-39 51-39 80s13 55 39 80" fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round"/>
+  <path d="M191 336l47-160h35l-47 160z" fill="#bfdbfe"/>
+  <path d="M300 176v160h101" fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="111" cy="125" r="10" fill="#93c5fd"/>
+  <circle cx="145" cy="125" r="10" fill="#93c5fd"/>
+  <circle cx="179" cy="125" r="10" fill="#93c5fd"/>
+</svg>

@@ -1,0 +1,7 @@
+NAME="CarsonLinux"
+ID=carsonlinux
+ID_LIKE=linux
+PRETTY_NAME="CarsonLinux"
+VERSION="0.1.0-dev"
+VERSION_ID="0.1"
+HOME_URL="https://github.com/carjam120443-netizen/CarsonLinux"
