@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$(id -u)" -ne 0 ]; then
-  echo "build-iso.sh must run as root (the workflow invokes it with sudo)." >&2
-  exit 1
-fi
-
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="${ROOT}/out"
 WORK="${ROOT}/.build"
