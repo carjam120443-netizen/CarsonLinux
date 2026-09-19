@@ -1,0 +1,5 @@
+NAME=carsonboot
+VERSION=0.1.0
+ARCH=x86_64
+DESCRIPTION=CarsonLinux custom UEFI boot stage
+TYPE=bootloader
