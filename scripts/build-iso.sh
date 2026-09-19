@@ -83,7 +83,7 @@ gzip -9 -f "$WORK/initramfs.cpio"
 # v7.3-rc3 is intentionally an unstable development kernel.
 KVER="7.3-rc3"
 KERNEL_TAG="v$KVER"
-KERNEL_URL="https://git.kernel.org/torvalds/h/$KERNEL_TAG"
+KERNEL_URL="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 git clone --depth 1 --branch "$KERNEL_TAG" "$KERNEL_URL" "$WORK/linux-$KVER"
 
 cd "$WORK/linux-$KVER"
