@@ -6,6 +6,10 @@ OUT="$ROOT/out"
 WORK="$ROOT/.build"
 ROOTFS="$WORK/rootfs"
 
+# Keep the ISO filename tied to the CarsonLinux release metadata.
+CARSONLINUX_VERSION="$(sed -n 's/^VERSION="\(.*\)"$/\1/p' "$ROOT/rootfs/etc/os-release")"
+CARSONLINUX_VERSION="${CARSONLINUX_VERSION:-0.1.0-dev}"
+
 rm -rf "$OUT" "$WORK"
 mkdir -p "$OUT" "$WORK"
 
