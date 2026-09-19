@@ -16,7 +16,7 @@ cp -a "${ROOT}/rootfs/." "${WORK}/rootfs/"
 install -Dm755 /bin/busybox "${WORK}/rootfs/bin/busybox"
 
 # Populate the standard BusyBox command names.
-chroot "${WORK}/rootfs" /bin/busybox --install -s /bin
+/bin/busybox --install -s "${WORK}/rootfs/bin"
 
 # The init script is the PID 1 entry point.
 chmod +x "${WORK}/rootfs/init" "${WORK}/rootfs/usr/bin/cpkg"
