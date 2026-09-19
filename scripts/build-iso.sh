@@ -19,7 +19,7 @@ install -Dm755 /bin/busybox "${WORK}/rootfs/bin/busybox"
 chroot "${WORK}/rootfs" /bin/busybox --install -s /bin
 
 # The init script is the PID 1 entry point.
-chmod +x "${WORK}/rootfs/init"
+chmod +x "${WORK}/rootfs/init" "${WORK}/rootfs/usr/bin/cpkg"
 
 # Required virtual filesystems/devices.
 mkdir -p "${WORK}/rootfs"/{dev,proc,sys,tmp,run,etc,home,var}
